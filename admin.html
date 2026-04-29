@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guest Visit Tracking — Reception</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">🏢 Guest Visit Tracking</div>
+    <div class="header-right">
+      <a href="qrcodes.html">📱 QR Codes</a>
+      <button class="btn-secondary" onclick="loadVisitors()" style="font-size:12px;padding:5px 12px">Refresh</button>
+      <button class="btn-green" onclick="xuatExcel()">⬇ Export Excel</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card stat-today"><div class="stat-number" id="s-today">—</div><div class="stat-label">Today's Visitors</div></div>
+      <div class="stat-card stat-in">   <div class="stat-number" id="s-in">—</div>   <div class="stat-label">Currently In</div></div>
+      <div class="stat-card stat-out">  <div class="stat-number" id="s-out">—</div>  <div class="stat-label">Checked Out</div></div>
+      <div class="stat-card stat-total"><div class="stat-number" id="s-total">—</div><div class="stat-label">This Month</div></div>
+    </div>
+
+    <div class="card">
+      <div class="filters">
+        <select id="f-loc" onchange="loadVisitors()">
+          <option value="">All Offices</option>
+          <option value="HCM">Ho Chi Minh City</option>
+          <option value="DN">Da Nang</option>
+          <option value="HN">Ha Noi</option>
+          <option value="Hue">Hue</option>
+        </select>
+        <select id="f-status" onchange="loadVisitors()">
+          <option value="">All Status</option>
+          <option value="in">Currently In</option>
+          <option value="out">Checked Out</option>
+        </select>
+        <input type="date" id="f-date" onchange="loadVisitors()" />
+        <input type="text" id="f-search" placeholder="Search name, company..." oninput="loadVisitors()" style="min-width:180px" />
+        <button class="btn-secondary" onclick="resetFilter()">Clear</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Visitor Name</th>
+              <th>Company</th>
+              <th>ID / Passport</th>
+              <th>Visitor Card No.</th>
+              <th>Purpose</th>
+              <th>Person to Meet</th>
+              <th>Office</th>
+              <th>Date In</th>
+              <th>Time In</th>
+              <th>Time Out</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="visitor-body">
+            <tr><td colspan="13" class="empty-td">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ASSIGN CARD -->
+  <div class="modal-overlay" id="modal-card">
+    <div class="modal">
+      <h3>Assign Visitor Card</h3>
+      <div class="form-group">
+        <label>Visitor Name</label>
+        <input type="text" id="mc-name" disabled />
+      </div>
+      <div class="form-group">
+        <label>Visitor Card No. *</label>
+        <input type="text" id="mc-cardno" placeholder="e.g. VC-001" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="luuThe()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-card')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CHECK-OUT -->
+  <div class="modal-overlay" id="modal-checkout">
+    <div class="modal">
+      <h3>Confirm Check-Out</h3>
+      <p id="mc-checkout-name" style="margin-bottom:12px;font-weight:bold"></p>
+      <p style="font-size:14px;color:#374151">Confirm visitor has left the office at <strong id="mc-time-out"></strong>?</p>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="xacNhanCheckout()">Confirm Check-Out</button>
+        <button class="btn-secondary" onclick="dongModal('modal-checkout')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <script src="firebase.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

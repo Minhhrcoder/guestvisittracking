@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Codes — Guest Visit Tracking</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="header no-print">
+    <div class="header-title">🏢 Guest Visit Tracking — QR Codes</div>
+    <div class="header-right">
+      <a href="admin.html">← Dashboard</a>
+      <button class="btn-secondary" onclick="window.print()" style="font-size:12px;padding:5px 12px">🖨️ Print QR Codes</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card no-print" style="margin-bottom:20px">
+      <p style="font-size:14px;color:#374151">
+        Place the corresponding QR Code at each office reception desk. Visitors scan QR → fill in their info → reception sees it instantly on the dashboard.
+      </p>
+    </div>
+
+    <div class="qr-grid" id="qr-grid"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="qrcodes.js"></script>
+</body>
+</html>
