@@ -9,31 +9,26 @@ const offices = [
 
 const grid = document.getElementById("qr-grid");
 
-async function renderAll() {
-  for (const o of offices) {
-    const url = `${BASE_URL}?loc=${o.loc}`;
-    const card = document.createElement("div");
-    card.className = "qr-card";
-    card.innerHTML = `
-      <div style="font-size:32px;margin-bottom:6px">${o.emoji}</div>
-      <h3 style="color:${o.color}">${o.label}</h3>
-      <p>Scan to register your visit</p>
-      <img id="qr-img-${o.loc}" style="border-radius:8px;width:200px;height:200px" />
-      <p style="font-size:11px;color:#9ca3af;margin-top:10px;word-break:break-all">${url}</p>
-      <a href="${url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:${o.color}">Open link →</a>
-    `;
-    grid.appendChild(card);
+offices.forEach(o => {
+  const url = `${BASE_URL}?loc=${o.loc}`;
 
-    try {
-      const dataUrl = await QRCode.toDataURL(url, {
-        width: 200,
-        color: { dark: o.color, light: "#ffffff" },
-      });
-      document.getElementById(`qr-img-${o.loc}`).src = dataUrl;
-    } catch (err) {
-      console.error("QR error for", o.loc, err);
-    }
-  }
-}
+  const card = document.createElement("div");
+  card.className = "qr-card";
+  card.innerHTML = `
+    <div style="font-size:32px;margin-bottom:6px">${o.emoji}</div>
+    <h3 style="color:${o.color}">${o.label}</h3>
+    <p>Scan to register your visit</p>
+    <div id="qr-div-${o.loc}" style="display:inline-block;border-radius:8px;overflow:hidden"></div>
+    <p style="font-size:11px;color:#9ca3af;margin-top:10px;word-break:break-all">${url}</p>
+    <a href="${url}" target="_blank" style="display:inline-block;margin-top:8px;font-size:12px;color:${o.color}">Open link →</a>
+  `;
+  grid.appendChild(card);
 
-renderAll();
+  new QRCode(document.getElementById(`qr-div-${o.loc}`), {
+    text: url,
+    width: 200,
+    height: 200,
+    colorDark: o.color,
+    colorLight: "#ffffff",
+  });
+});
