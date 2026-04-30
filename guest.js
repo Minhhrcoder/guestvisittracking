@@ -1,5 +1,5 @@
-const params   = new URLSearchParams(window.location.search);
-const location = params.get("loc") || "HCM";
+const params = new URLSearchParams(window.location.search);
+const urlLoc = params.get("loc") || "";
 
 const locConfig = {
   HCM: { label: "Ho Chi Minh City", cls: "loc-hcm", color: "#1e40af", bg: "#dbeafe" },
@@ -7,12 +7,11 @@ const locConfig = {
   HN:  { label: "Ha Noi",           cls: "loc-hn",  color: "#166534", bg: "#dcfce7" },
   Hue: { label: "Hue",              cls: "loc-hue", color: "#dc2626", bg: "#fee2e2" },
 };
-const cfg = locConfig[location] || locConfig["HCM"];
 
-const badge = document.getElementById("loc-badge");
-badge.textContent = "📍 " + cfg.label;
-badge.style.background = cfg.bg;
-badge.style.color = cfg.color;
+// Pre-select location from QR code URL param if available
+if (urlLoc && document.getElementById("g-location")) {
+  document.getElementById("g-location").value = urlLoc;
+}
 
 // Auto-fill date and time
 const now = new Date();
@@ -29,15 +28,23 @@ document.getElementById("form-guest").addEventListener("submit", async function 
   const tb = document.getElementById("tb-guest");
   tb.textContent = "Submitting..."; tb.className = "thong-bao";
 
+  const location = document.getElementById("g-location").value;
+  if (!location) {
+    tb.textContent = "Please select an office. / Vui lòng chọn văn phòng.";
+    tb.className = "thong-bao loi"; return;
+  }
+
   const purposeRaw = document.getElementById("g-purpose").value;
   const purpose = purposeRaw === "Other"
     ? document.getElementById("g-other").value.trim()
     : purposeRaw;
 
   if (purposeRaw === "Other" && !purpose) {
-    tb.textContent = "Please specify your purpose."; tb.className = "thong-bao loi"; return;
+    tb.textContent = "Please specify your purpose. / Vui lòng ghi rõ mục đích.";
+    tb.className = "thong-bao loi"; return;
   }
 
+  const cfg = locConfig[location] || locConfig["HCM"];
   const dateVal = document.getElementById("g-date").value;
   const timeVal = document.getElementById("g-time").value;
   const [y, m, d] = dateVal.split("-");
@@ -75,6 +82,7 @@ document.getElementById("form-guest").addEventListener("submit", async function 
 
 function dangKyMoi() {
   document.getElementById("form-guest").reset();
+  if (urlLoc) document.getElementById("g-location").value = urlLoc;
   const now = new Date();
   document.getElementById("g-date").value = now.toISOString().split("T")[0];
   document.getElementById("g-time").value = now.toTimeString().slice(0, 5);
