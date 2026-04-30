@@ -1,7 +1,32 @@
+// --- AUTH CHECK ---
+const gvtUser = JSON.parse(sessionStorage.getItem("gvt_user") || "null");
+if (!gvtUser) {
+  window.location.href = "login.html";
+}
+
+const isBranch = gvtUser && gvtUser.role === "branch";
+const myBranch = isBranch ? gvtUser.branch : null;
+
+// Show user info in header
+document.getElementById("user-label").textContent = "👤 " + (gvtUser ? gvtUser.name : "");
+
+// If branch admin: lock and hide office filter
+if (isBranch) {
+  const locSelect = document.getElementById("f-loc");
+  locSelect.value = myBranch;
+  locSelect.style.display = "none";
+}
+
+function logout() {
+  sessionStorage.removeItem("gvt_user");
+  window.location.href = "login.html";
+}
+
+// ------------------
+
 let currentId = null;
 let allData = [];
 
-// Set default date filter = today
 document.getElementById("f-date").value = new Date().toISOString().split("T")[0];
 
 function locBadge(loc) {
@@ -23,19 +48,21 @@ async function loadVisitors() {
   allData = await dbGet("visitors");
   allData.sort((a, b) => b.id - a.id);
 
+  // Stats: branch admin only counts their own office
+  const scopedData = isBranch ? allData.filter(v => v.location === myBranch) : allData;
   const today = nowDate();
-  const thisMonth = today.slice(3); // mm/yyyy
-  document.getElementById("s-today").textContent = allData.filter(v => v.dateIn === today).length;
-  document.getElementById("s-in").textContent    = allData.filter(v => v.status === "in" && v.dateIn === today).length;
-  document.getElementById("s-out").textContent   = allData.filter(v => v.status === "out" && v.dateIn === today).length;
-  document.getElementById("s-total").textContent = allData.filter(v => v.dateIn && v.dateIn.slice(3) === thisMonth).length;
+  const thisMonth = today.slice(3);
+  document.getElementById("s-today").textContent = scopedData.filter(v => v.dateIn === today).length;
+  document.getElementById("s-in").textContent    = scopedData.filter(v => v.status === "in"  && v.dateIn === today).length;
+  document.getElementById("s-out").textContent   = scopedData.filter(v => v.status === "out" && v.dateIn === today).length;
+  document.getElementById("s-total").textContent = scopedData.filter(v => v.dateIn && v.dateIn.slice(3) === thisMonth).length;
 
   const fLoc    = document.getElementById("f-loc").value;
   const fStatus = document.getElementById("f-status").value;
   const fDate   = document.getElementById("f-date").value;
   const fSearch = document.getElementById("f-search").value.toLowerCase();
 
-  let ds = allData;
+  let ds = isBranch ? allData.filter(v => v.location === myBranch) : allData;
   if (fLoc)    ds = ds.filter(v => v.location === fLoc);
   if (fStatus) ds = ds.filter(v => v.status === fStatus);
   if (fDate)   ds = ds.filter(v => v.dateIn === toDateVN(fDate));
@@ -117,7 +144,7 @@ function dongModal(id) {
 }
 
 function resetFilter() {
-  document.getElementById("f-loc").value    = "";
+  if (!isBranch) document.getElementById("f-loc").value = "";
   document.getElementById("f-status").value = "";
   document.getElementById("f-date").value   = new Date().toISOString().split("T")[0];
   document.getElementById("f-search").value = "";
@@ -125,22 +152,23 @@ function resetFilter() {
 }
 
 async function xuatExcel() {
-  const ds = allData.length > 0 ? allData : await dbGet("visitors");
+  const base = allData.length > 0 ? allData : await dbGet("visitors");
+  const ds = isBranch ? base.filter(v => v.location === myBranch) : base;
   if (ds.length === 0) { alert("No data to export!"); return; }
   const rows = ds.map((v, i) => ({
-    "No.":           i + 1,
-    "Visitor Name":  v.visitorName,
-    "Company":       v.companyName,
-    "ID / Passport": v.idNumber || "",
-    "Visitor Card":  v.visitorCardNo || "",
-    "Purpose":       v.purpose,
+    "No.":            i + 1,
+    "Visitor Name":   v.visitorName,
+    "Company":        v.companyName,
+    "ID / Passport":  v.idNumber || "",
+    "Visitor Card":   v.visitorCardNo || "",
+    "Purpose":        v.purpose,
     "Person to Meet": v.meetPerson || "",
-    "Office":        v.locationLabel || v.location,
-    "Date In":       v.dateIn,
-    "Time In":       v.timeIn,
-    "Date Out":      v.dateOut || "",
-    "Time Out":      v.timeOut || "",
-    "Status":        v.status === "in" ? "In Office" : "Checked Out",
+    "Office":         v.locationLabel || v.location,
+    "Date In":        v.dateIn,
+    "Time In":        v.timeIn,
+    "Date Out":       v.dateOut || "",
+    "Time Out":       v.timeOut || "",
+    "Status":         v.status === "in" ? "In Office" : "Checked Out",
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
@@ -149,5 +177,4 @@ async function xuatExcel() {
 }
 
 loadVisitors();
-// Auto-refresh every 60 seconds
 setInterval(loadVisitors, 60000);
