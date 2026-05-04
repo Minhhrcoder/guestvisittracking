@@ -91,6 +91,12 @@ td { padding: 8px 10px; vertical-align: middle; }
 .tab-btn:hover { color: #1a56db; }
 .tab-btn.active { color: #1a56db; border-bottom-color: #1a56db; }
 
+/* SUB-TABS */
+.sub-tabs { display: flex; gap: 8px; margin: 20px 0 4px; border-bottom: 1px solid #e5e7eb; }
+.sub-tab-btn { padding: 8px 18px; background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-size: 13px; font-weight: 500; color: #6b7280; transition: color 0.2s; margin-bottom: -1px; }
+.sub-tab-btn:hover { color: #1a56db; }
+.sub-tab-btn.active { color: #1a56db; border-bottom-color: #1a56db; }
+
 /* QR CODES */
 .qr-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .qr-card { background: white; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }

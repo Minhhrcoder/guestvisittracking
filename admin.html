@@ -74,44 +74,92 @@
       </div>
     </div>
 
-    <!-- ===== TAB: CARD BORROWING ===== -->
+    <!-- ===== TAB: INTERNAL CARD TRACKING ===== -->
     <div id="tab-cards" style="display:none">
-      <div class="stats-grid">
-        <div class="stat-card stat-in">   <div class="stat-number" id="cb-borrowed">—</div><div class="stat-label">Currently Borrowed</div></div>
-        <div class="stat-card stat-out">  <div class="stat-number" id="cb-returned">—</div><div class="stat-label">Returned Today</div></div>
-        <div class="stat-card stat-total"><div class="stat-number" id="cb-total">—</div>   <div class="stat-label">This Month</div></div>
+
+      <!-- Sub-tabs -->
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="sub-btn-short" onclick="switchSubTab('short')">⏱ Short-term</button>
+        <button class="sub-tab-btn" id="sub-btn-long" onclick="switchSubTab('long')">📋 Long-term (Probation / Intern)</button>
       </div>
 
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <h2 style="margin:0;font-size:16px;color:#374151">Internal Card Tracking</h2>
-          <button class="btn-primary" onclick="moModalMuonThe()">+ New Borrow Record</button>
+      <!-- ---- SHORT-TERM ---- -->
+      <div id="sub-short">
+        <div class="stats-grid">
+          <div class="stat-card stat-in">   <div class="stat-number" id="cb-borrowed">—</div><div class="stat-label">Currently Borrowed</div></div>
+          <div class="stat-card stat-out">  <div class="stat-number" id="cb-returned">—</div><div class="stat-label">Returned Today</div></div>
+          <div class="stat-card stat-total"><div class="stat-number" id="cb-total">—</div>   <div class="stat-label">This Month</div></div>
         </div>
-        <div class="filters">
-          <select id="cb-f-status" onchange="loadCardLoans()">
-            <option value="">All Status</option>
-            <option value="borrowed">Borrowed</option>
-            <option value="returned">Returned</option>
-          </select>
-          <input type="date" id="cb-f-date" onchange="loadCardLoans()" />
-          <input type="text" id="cb-f-search" placeholder="Search employee name..." oninput="loadCardLoans()" style="min-width:180px" />
-          <button class="btn-secondary" onclick="resetCardFilter()">Clear</button>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th><th>Employee Name</th><th>Company</th><th>Card Type</th><th>Reason</th>
-                <th>Borrow Date</th><th>Borrow Time</th><th>Return Date</th><th>Return Time</th>
-                <th>Status</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="card-loan-body">
-              <tr><td colspan="11" class="empty-td">Loading...</td></tr>
-            </tbody>
-          </table>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h2 style="margin:0;font-size:16px;color:#374151">Short-term Borrowing</h2>
+            <button class="btn-primary" onclick="moModalMuonThe()">+ New Record</button>
+          </div>
+          <div class="filters">
+            <select id="cb-f-status" onchange="loadCardLoans()">
+              <option value="">All Status</option>
+              <option value="borrowed">Borrowed</option>
+              <option value="returned">Returned</option>
+            </select>
+            <input type="date" id="cb-f-date" onchange="loadCardLoans()" />
+            <input type="text" id="cb-f-search" placeholder="Search employee name..." oninput="loadCardLoans()" style="min-width:180px" />
+            <button class="btn-secondary" onclick="resetCardFilter()">Clear</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Employee Name</th><th>Company</th><th>Card Type</th><th>Reason</th>
+                  <th>Borrow Date</th><th>Borrow Time</th><th>Return Date</th><th>Return Time</th>
+                  <th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="card-loan-body">
+                <tr><td colspan="11" class="empty-td">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      <!-- ---- LONG-TERM ---- -->
+      <div id="sub-long" style="display:none">
+        <div class="stats-grid">
+          <div class="stat-card stat-in">   <div class="stat-number" id="lt-borrowed">—</div><div class="stat-label">Currently Holding</div></div>
+          <div class="stat-card stat-out">  <div class="stat-number" id="lt-returned">—</div><div class="stat-label">Returned</div></div>
+          <div class="stat-card stat-total"><div class="stat-number" id="lt-total">—</div>   <div class="stat-label">Total Records</div></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h2 style="margin:0;font-size:16px;color:#374151">Long-term Borrowing (Probation / Intern)</h2>
+            <button class="btn-primary" onclick="moModalMuonTheDai()">+ New Record</button>
+          </div>
+          <div class="filters">
+            <select id="lt-f-status" onchange="loadLongTermLoans()">
+              <option value="">All Status</option>
+              <option value="borrowed">Holding</option>
+              <option value="returned">Returned</option>
+            </select>
+            <input type="text" id="lt-f-search" placeholder="Search employee name..." oninput="loadLongTermLoans()" style="min-width:180px" />
+            <button class="btn-secondary" onclick="resetLongFilter()">Clear</button>
+          </div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Employee Name</th><th>Company</th><th>Card Type</th>
+                  <th>Borrow Date</th><th>Expected Return</th><th>Actual Return</th>
+                  <th>Note</th><th>Status</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="long-loan-body">
+                <tr><td colspan="10" class="empty-td">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
@@ -186,6 +234,61 @@
       <div class="modal-actions">
         <button class="btn-primary" onclick="luuMuonThe()">Save</button>
         <button class="btn-secondary" onclick="dongModal('modal-borrow')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NEW LONG-TERM RECORD -->
+  <div class="modal-overlay" id="modal-borrow-long">
+    <div class="modal">
+      <h3>New Long-term Borrow Record</h3>
+      <div class="form-group">
+        <label>Employee Name *</label>
+        <input type="text" id="ml-name" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label>Company *</label>
+        <select id="ml-company">
+          <option value="">-- Select company --</option>
+          <option value="Orient">Orient</option>
+          <option value="Bravo">Bravo</option>
+          <option value="Neurond">Neurond</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Card Type *</label>
+        <input type="text" id="ml-type" placeholder="e.g. Access Card No. 05" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Borrow Date *</label>
+          <input type="date" id="ml-borrow-date" />
+        </div>
+        <div class="form-group">
+          <label>Expected Return Date *</label>
+          <input type="date" id="ml-return-date" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="ml-note" placeholder="Optional note..." />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="luuMuonTheDai()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-borrow-long')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LONG-TERM RETURN -->
+  <div class="modal-overlay" id="modal-return-long">
+    <div class="modal">
+      <h3>Confirm Card Return</h3>
+      <p id="mlr-name" style="margin-bottom:12px;font-weight:bold"></p>
+      <p style="font-size:14px;color:#374151">Confirm card returned on <strong id="mlr-date"></strong>?</p>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="xacNhanTraDai()">Confirm Return</button>
+        <button class="btn-secondary" onclick="dongModal('modal-return-long')">Cancel</button>
       </div>
     </div>
   </div>

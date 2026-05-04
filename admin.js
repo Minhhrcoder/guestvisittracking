@@ -11,10 +11,12 @@ function logout() {
 }
 
 // --- STATE ---
-let currentId   = null;
-let allData     = [];
+let currentId    = null;
+let allData      = [];
 let allCardLoans = [];
-let currentTab  = "visitors";
+let allLongLoans = [];
+let currentTab   = "visitors";
+let currentSubTab = "short";
 
 document.getElementById("f-date").value    = new Date().toISOString().split("T")[0];
 document.getElementById("cb-f-date").value = new Date().toISOString().split("T")[0];
@@ -30,9 +32,20 @@ function switchTab(tab) {
   if (tab === "cards")    loadCardLoans();
 }
 
+function switchSubTab(sub) {
+  currentSubTab = sub;
+  document.getElementById("sub-short").style.display = sub === "short" ? "block" : "none";
+  document.getElementById("sub-long").style.display  = sub === "long"  ? "block" : "none";
+  document.getElementById("sub-btn-short").classList.toggle("active", sub === "short");
+  document.getElementById("sub-btn-long").classList.toggle("active",  sub === "long");
+  if (sub === "short") loadCardLoans();
+  if (sub === "long")  loadLongTermLoans();
+}
+
 function refreshCurrent() {
   if (currentTab === "visitors") loadVisitors();
-  else loadCardLoans();
+  else if (currentSubTab === "short") loadCardLoans();
+  else loadLongTermLoans();
 }
 
 // --- HELPERS ---
@@ -291,9 +304,121 @@ function resetCardFilter() {
   loadCardLoans();
 }
 
+// =====================
+// LONG-TERM BORROWING
+// =====================
+async function loadLongTermLoans() {
+  const tbody = document.getElementById("long-loan-body");
+  tbody.innerHTML = `<tr><td colspan="10" class="empty-td">Loading...</td></tr>`;
+
+  allLongLoans = await dbGet("card_loans_long");
+  allLongLoans.sort((a, b) => b.id - a.id);
+
+  document.getElementById("lt-borrowed").textContent = allLongLoans.filter(v => v.status === "borrowed").length;
+  document.getElementById("lt-returned").textContent = allLongLoans.filter(v => v.status === "returned").length;
+  document.getElementById("lt-total").textContent    = allLongLoans.length;
+
+  const fStatus = document.getElementById("lt-f-status").value;
+  const fSearch = document.getElementById("lt-f-search").value.toLowerCase();
+
+  let ds = [...allLongLoans];
+  if (fStatus) ds = ds.filter(v => v.status === fStatus);
+  if (fSearch) ds = ds.filter(v => v.employeeName.toLowerCase().includes(fSearch));
+
+  if (ds.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" class="empty-td">No records found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = ds.map((v, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong>${v.employeeName}</strong></td>
+      <td>${v.company || "—"}</td>
+      <td>${v.cardType}</td>
+      <td>${v.borrowDate}</td>
+      <td>${v.expectedReturn}</td>
+      <td>${v.actualReturn || "—"}</td>
+      <td>${v.note || "—"}</td>
+      <td><span class="badge badge-${v.status === 'borrowed' ? 'in' : 'out'}">${v.status === "borrowed" ? "Holding" : "Returned"}</span></td>
+      <td>
+        ${v.status === "borrowed" ? `<button class="btn-success" onclick="moModalTraDai('${v.id}')">Return</button>` : ""}
+        ${canDelete ? `<button class="btn-danger" onclick="xoaMuonDai('${v.id}')">Delete</button>` : ""}
+      </td>
+    </tr>
+  `).join("");
+}
+
+function moModalMuonTheDai() {
+  document.getElementById("ml-name").value        = "";
+  document.getElementById("ml-company").value     = "";
+  document.getElementById("ml-type").value        = "";
+  document.getElementById("ml-borrow-date").value = new Date().toISOString().split("T")[0];
+  document.getElementById("ml-return-date").value = "";
+  document.getElementById("ml-note").value        = "";
+  document.getElementById("modal-borrow-long").classList.add("active");
+}
+
+async function luuMuonTheDai() {
+  const name         = document.getElementById("ml-name").value.trim();
+  const company      = document.getElementById("ml-company").value;
+  const type         = document.getElementById("ml-type").value.trim();
+  const borrowDate   = document.getElementById("ml-borrow-date").value;
+  const expectedDate = document.getElementById("ml-return-date").value;
+  const note         = document.getElementById("ml-note").value.trim();
+
+  if (!name || !company || !type || !borrowDate || !expectedDate) {
+    alert("Please fill in all required fields!"); return;
+  }
+
+  const id = Date.now().toString();
+  await dbSet("card_loans_long", id, {
+    id,
+    employeeName:   name,
+    company,
+    cardType:       type,
+    borrowDate:     toDateVN(borrowDate),
+    expectedReturn: toDateVN(expectedDate),
+    actualReturn:   "",
+    note,
+    status:         "borrowed",
+    createdAt:      new Date().toLocaleString("en-GB"),
+  });
+
+  dongModal("modal-borrow-long");
+  loadLongTermLoans();
+}
+
+function moModalTraDai(id) {
+  currentId = id;
+  const v = allLongLoans.find(x => x.id === id);
+  document.getElementById("mlr-name").textContent = v.employeeName + " — " + v.cardType;
+  document.getElementById("mlr-date").textContent = nowDate();
+  document.getElementById("modal-return-long").classList.add("active");
+}
+
+async function xacNhanTraDai() {
+  await dbUpdate("card_loans_long", currentId, { status: "returned", actualReturn: nowDate() });
+  dongModal("modal-return-long");
+  loadLongTermLoans();
+}
+
+async function xoaMuonDai(id) {
+  if (!confirm("Are you sure you want to delete this record?")) return;
+  await dbDelete("card_loans_long", id);
+  loadLongTermLoans();
+}
+
+function resetLongFilter() {
+  document.getElementById("lt-f-status").value = "";
+  document.getElementById("lt-f-search").value = "";
+  loadLongTermLoans();
+}
+
 // --- INIT ---
 loadVisitors();
 setInterval(() => {
   if (currentTab === "visitors") loadVisitors();
-  else loadCardLoans();
+  else if (currentSubTab === "short") loadCardLoans();
+  else loadLongTermLoans();
 }, 60000);
