@@ -199,7 +199,7 @@ async function loadCardLoans() {
   if (fSearch) ds = ds.filter(v => v.employeeName.toLowerCase().includes(fSearch));
 
   if (ds.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" class="empty-td">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="empty-td">No records found.</td></tr>`;
     return;
   }
 
@@ -207,6 +207,7 @@ async function loadCardLoans() {
     <tr>
       <td>${i + 1}</td>
       <td><strong>${v.employeeName}</strong></td>
+      <td>${v.company || "—"}</td>
       <td>${v.cardType}</td>
       <td>${v.reason || "—"}</td>
       <td>${v.borrowDate}</td>
@@ -223,9 +224,10 @@ async function loadCardLoans() {
 }
 
 function moModalMuonThe() {
-  document.getElementById("mb-name").value   = "";
-  document.getElementById("mb-type").value   = "";
-  document.getElementById("mb-reason").value = "";
+  document.getElementById("mb-name").value    = "";
+  document.getElementById("mb-company").value = "";
+  document.getElementById("mb-type").value    = "";
+  document.getElementById("mb-reason").value  = "";
   document.getElementById("mb-date").value   = new Date().toISOString().split("T")[0];
   document.getElementById("mb-time").value   = new Date().toTimeString().slice(0, 5);
   document.getElementById("modal-borrow").classList.add("active");
@@ -233,12 +235,13 @@ function moModalMuonThe() {
 
 async function luuMuonThe() {
   const name    = document.getElementById("mb-name").value.trim();
-  const type    = document.getElementById("mb-type").value;
+  const company = document.getElementById("mb-company").value;
+  const type    = document.getElementById("mb-type").value.trim();
   const reason  = document.getElementById("mb-reason").value.trim();
   const dateVal = document.getElementById("mb-date").value;
   const timeVal = document.getElementById("mb-time").value;
 
-  if (!name || !type || !dateVal || !timeVal) {
+  if (!name || !company || !type || !dateVal || !timeVal) {
     alert("Please fill in all required fields!"); return;
   }
 
@@ -246,6 +249,7 @@ async function luuMuonThe() {
   await dbSet("card_loans", id, {
     id,
     employeeName: name,
+    company:      company,
     cardType:     type,
     reason,
     borrowDate:   toDateVN(dateVal),
