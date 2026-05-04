@@ -13,67 +13,110 @@
     <div class="header-right">
       <span id="user-label" style="font-size:13px;opacity:0.85"></span>
       <a href="qrcodes.html">📱 QR Codes</a>
-      <button class="btn-secondary" onclick="loadVisitors()" style="font-size:12px;padding:5px 12px">Refresh</button>
+      <button class="btn-secondary" onclick="refreshCurrent()" style="font-size:12px;padding:5px 12px">Refresh</button>
       <button class="btn-green" onclick="xuatExcel()">⬇ Export Excel</button>
       <button class="btn-secondary" onclick="logout()" style="font-size:12px;padding:5px 12px">Logout</button>
     </div>
   </div>
 
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-card stat-today"><div class="stat-number" id="s-today">—</div><div class="stat-label">Today's Visitors</div></div>
-      <div class="stat-card stat-in">   <div class="stat-number" id="s-in">—</div>   <div class="stat-label">Currently In</div></div>
-      <div class="stat-card stat-out">  <div class="stat-number" id="s-out">—</div>  <div class="stat-label">Checked Out</div></div>
-      <div class="stat-card stat-total"><div class="stat-number" id="s-total">—</div><div class="stat-label">This Month</div></div>
-    </div>
-
-    <div class="card">
-      <div class="filters">
-        <select id="f-loc" onchange="loadVisitors()">
-          <option value="">All Offices</option>
-          <option value="HCM">Ho Chi Minh City</option>
-          <option value="DN">Da Nang</option>
-          <option value="HN">Ha Noi</option>
-          <option value="Hue">Hue</option>
-        </select>
-        <select id="f-status" onchange="loadVisitors()">
-          <option value="">All Status</option>
-          <option value="in">Currently In</option>
-          <option value="out">Checked Out</option>
-        </select>
-        <input type="date" id="f-date" onchange="loadVisitors()" />
-        <input type="text" id="f-search" placeholder="Search name, company..." oninput="loadVisitors()" style="min-width:180px" />
-        <button class="btn-secondary" onclick="resetFilter()">Clear</button>
-      </div>
-
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Visitor Name</th>
-              <th>Company</th>
-              <th>ID / Passport</th>
-              <th>Visitor Card No.</th>
-              <th>Purpose</th>
-              <th>Person to Meet</th>
-              <th>Office</th>
-              <th>Date In</th>
-              <th>Time In</th>
-              <th>Time Out</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="visitor-body">
-            <tr><td colspan="13" class="empty-td">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
+  <!-- TABS -->
+  <div style="background:white;border-bottom:2px solid #e5e7eb">
+    <div style="max-width:1100px;margin:0 auto;padding:0 16px;display:flex;gap:4px">
+      <button class="tab-btn active" id="tab-btn-visitors" onclick="switchTab('visitors')">👤 Visitor Log</button>
+      <button class="tab-btn" id="tab-btn-cards" onclick="switchTab('cards')">🪪 Card Borrowing</button>
     </div>
   </div>
 
-  <!-- MODAL: ASSIGN CARD -->
+  <div class="container">
+
+    <!-- ===== TAB: VISITOR LOG ===== -->
+    <div id="tab-visitors">
+      <div class="stats-grid">
+        <div class="stat-card stat-today"><div class="stat-number" id="s-today">—</div><div class="stat-label">Today's Visitors</div></div>
+        <div class="stat-card stat-in">   <div class="stat-number" id="s-in">—</div>   <div class="stat-label">Currently In</div></div>
+        <div class="stat-card stat-out">  <div class="stat-number" id="s-out">—</div>  <div class="stat-label">Checked Out</div></div>
+        <div class="stat-card stat-total"><div class="stat-number" id="s-total">—</div><div class="stat-label">This Month</div></div>
+      </div>
+
+      <div class="card">
+        <div class="filters">
+          <select id="f-loc" onchange="loadVisitors()">
+            <option value="">All Offices</option>
+            <option value="HCM">Ho Chi Minh City</option>
+            <option value="DN">Da Nang</option>
+            <option value="HN">Ha Noi</option>
+            <option value="Hue">Hue</option>
+          </select>
+          <select id="f-status" onchange="loadVisitors()">
+            <option value="">All Status</option>
+            <option value="in">Currently In</option>
+            <option value="out">Checked Out</option>
+          </select>
+          <input type="date" id="f-date" onchange="loadVisitors()" />
+          <input type="text" id="f-search" placeholder="Search name, company..." oninput="loadVisitors()" style="min-width:180px" />
+          <button class="btn-secondary" onclick="resetFilter()">Clear</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Visitor Name</th><th>Company</th><th>ID / Passport</th>
+                <th>Visitor Card No.</th><th>Purpose</th><th>Person to Meet</th>
+                <th>Office</th><th>Date In</th><th>Time In</th><th>Time Out</th>
+                <th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="visitor-body">
+              <tr><td colspan="13" class="empty-td">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TAB: CARD BORROWING ===== -->
+    <div id="tab-cards" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card stat-in">   <div class="stat-number" id="cb-borrowed">—</div><div class="stat-label">Currently Borrowed</div></div>
+        <div class="stat-card stat-out">  <div class="stat-number" id="cb-returned">—</div><div class="stat-label">Returned Today</div></div>
+        <div class="stat-card stat-total"><div class="stat-number" id="cb-total">—</div>   <div class="stat-label">This Month</div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;font-size:16px;color:#374151">Employee Card Borrowing</h2>
+          <button class="btn-primary" onclick="moModalMuonThe()">+ New Borrow Record</button>
+        </div>
+        <div class="filters">
+          <select id="cb-f-status" onchange="loadCardLoans()">
+            <option value="">All Status</option>
+            <option value="borrowed">Borrowed</option>
+            <option value="returned">Returned</option>
+          </select>
+          <input type="date" id="cb-f-date" onchange="loadCardLoans()" />
+          <input type="text" id="cb-f-search" placeholder="Search employee name..." oninput="loadCardLoans()" style="min-width:180px" />
+          <button class="btn-secondary" onclick="resetCardFilter()">Clear</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Employee Name</th><th>Card Type</th><th>Reason</th>
+                <th>Borrow Date</th><th>Borrow Time</th><th>Return Date</th><th>Return Time</th>
+                <th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="card-loan-body">
+              <tr><td colspan="10" class="empty-td">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL: ASSIGN VISITOR CARD -->
   <div class="modal-overlay" id="modal-card">
     <div class="modal">
       <h3>Assign Visitor Card</h3>
@@ -101,6 +144,58 @@
       <div class="modal-actions">
         <button class="btn-success" onclick="xacNhanCheckout()">Confirm Check-Out</button>
         <button class="btn-secondary" onclick="dongModal('modal-checkout')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NEW BORROW RECORD -->
+  <div class="modal-overlay" id="modal-borrow">
+    <div class="modal">
+      <h3>New Borrow Record</h3>
+      <div class="form-group">
+        <label>Employee Name *</label>
+        <input type="text" id="mb-name" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label>Card Type *</label>
+        <select id="mb-type">
+          <option value="">-- Select card type --</option>
+          <option value="Access Card">Access Card</option>
+          <option value="Parking Card">Parking Card</option>
+          <option value="Office Key">Office Key</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Reason</label>
+        <input type="text" id="mb-reason" placeholder="Reason for borrowing..." />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Borrow Date *</label>
+          <input type="date" id="mb-date" />
+        </div>
+        <div class="form-group">
+          <label>Borrow Time *</label>
+          <input type="time" id="mb-time" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="luuMuonThe()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-borrow')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RETURN CARD -->
+  <div class="modal-overlay" id="modal-return">
+    <div class="modal">
+      <h3>Confirm Card Return</h3>
+      <p id="mr-name" style="margin-bottom:12px;font-weight:bold"></p>
+      <p style="font-size:14px;color:#374151">Confirm card returned at <strong id="mr-time"></strong>?</p>
+      <div class="modal-actions">
+        <button class="btn-success" onclick="xacNhanTra()">Confirm Return</button>
+        <button class="btn-secondary" onclick="dongModal('modal-return')">Cancel</button>
       </div>
     </div>
   </div>
