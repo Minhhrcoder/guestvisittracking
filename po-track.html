@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track Request — Orient's Admin Tool</title>
+  <link rel="icon" href="logo.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .track-card { background:white; border-radius:12px; padding:28px; max-width:520px; margin:0 auto; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    .track-field { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f3f4f6; font-size:14px; }
+    .track-field:last-child { border-bottom:none; }
+    .track-label { color:#6b7280; }
+    .track-value { font-weight:500; color:#111827; text-align:right; max-width:60%; }
+    .timeline { margin-top:24px; }
+    .tl-step { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+    .tl-dot  { width:20px; height:20px; border-radius:50%; flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold; }
+    .tl-dot.done    { background:#1a56db; color:white; }
+    .tl-dot.current { background:#f59e0b; color:white; }
+    .tl-dot.pending { background:#e5e7eb; color:#9ca3af; }
+    .tl-label { font-size:13px; }
+    .tl-label.done    { color:#111827; font-weight:500; }
+    .tl-label.current { color:#f59e0b; font-weight:600; }
+    .tl-label.pending { color:#9ca3af; }
+    .search-box { display:flex; gap:8px; margin-bottom:20px; }
+    .search-box input { flex:1; }
+  </style>
+</head>
+<body>
+  <div class="guest-page" style="padding-bottom:40px">
+    <div class="guest-logo"><img src="logo.svg" style="width:60px;height:60px" /></div>
+    <h1 class="guest-title" style="font-size:20px">Track Purchase Request</h1>
+
+    <div style="max-width:520px;margin:0 auto;width:100%;padding:0 16px">
+      <div class="search-box">
+        <input type="text" id="track-input" placeholder="Enter your tracking ID..." style="font-size:14px" />
+        <button class="btn-primary" onclick="trackRequest()">Track</button>
+      </div>
+
+      <div id="track-result"></div>
+    </div>
+  </div>
+
+  <script src="firebase.js"></script>
+  <script src="po-track.js"></script>
+</body>
+</html>

@@ -175,11 +175,15 @@
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
           <h2 style="margin:0;font-size:16px;color:#374151">Purchase Order Management</h2>
-          <button class="btn-primary" onclick="openPOModal(null)">+ New PO</button>
+          <div style="display:flex;gap:8px">
+            <a href="po-request.html" target="_blank" class="btn-secondary" style="font-size:13px;padding:8px 14px;text-decoration:none">🔗 Request Form Link</a>
+            <button class="btn-primary" onclick="openPOModal(null)">+ New PO</button>
+          </div>
         </div>
         <div class="filters">
           <select id="po-f-status" onchange="loadPurchaseOrders()">
             <option value="">All Status</option>
+            <option value="Pending Review">Pending Review</option>
             <option value="Request for Quotations (RFQ)">RFQ</option>
             <option value="Initial Review by Procurement">Initial Review</option>
             <option value="Internal Approvals (Dept Head / Finance / BOD)">Internal Approvals</option>
@@ -398,6 +402,7 @@
         <label>Status *</label>
         <select id="po-status">
           <option value="">-- Select status --</option>
+          <option value="Pending Review">Pending Review</option>
           <option value="Request for Quotations (RFQ)">Request for Quotations (RFQ)</option>
           <option value="Initial Review by Procurement">Initial Review by Procurement</option>
           <option value="Internal Approvals (Dept Head / Finance / BOD)">Internal Approvals (Dept Head / Finance / BOD)</option>

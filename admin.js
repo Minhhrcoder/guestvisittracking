@@ -425,6 +425,7 @@ function resetLongFilter() {
 // PURCHASING
 // =====================
 const PO_STATUS_COLOR = {
+  "Pending Review":                                 "#f3f4f6",
   "Request for Quotations (RFQ)":                  "#fefce8",
   "Initial Review by Procurement":                  "#fef9c3",
   "Internal Approvals (Dept Head / Finance / BOD)": "#ffedd5",
