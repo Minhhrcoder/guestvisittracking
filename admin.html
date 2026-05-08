@@ -24,6 +24,7 @@
     <div style="max-width:1100px;margin:0 auto;padding:0 16px;display:flex;gap:4px">
       <button class="tab-btn active" id="tab-btn-visitors" onclick="switchTab('visitors')">👤 Visitor Log</button>
       <button class="tab-btn" id="tab-btn-cards" onclick="switchTab('cards')">🪪 Internal Card Tracking</button>
+      <button class="tab-btn" id="tab-btn-po" onclick="switchTab('po')">📦 Purchasing</button>
     </div>
   </div>
 
@@ -160,6 +161,59 @@
         </div>
       </div>
 
+    </div>
+
+    <!-- ===== TAB: PURCHASING ===== -->
+    <div id="tab-po" style="display:none">
+      <div class="stats-grid">
+        <div class="stat-card stat-total"><div class="stat-number" id="po-total">—</div><div class="stat-label">Total Orders</div></div>
+        <div class="stat-card stat-today"><div class="stat-number" id="po-urgent">—</div><div class="stat-label">Urgent</div></div>
+        <div class="stat-card stat-in">  <div class="stat-number" id="po-inprog">—</div><div class="stat-label">In Progress</div></div>
+        <div class="stat-card stat-out"> <div class="stat-number" id="po-done">—</div>  <div class="stat-label">Completed</div></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <h2 style="margin:0;font-size:16px;color:#374151">Purchase Order Management</h2>
+          <button class="btn-primary" onclick="openPOModal(null)">+ New PO</button>
+        </div>
+        <div class="filters">
+          <select id="po-f-status" onchange="loadPurchaseOrders()">
+            <option value="">All Status</option>
+            <option value="Request for Quotations (RFQ)">RFQ</option>
+            <option value="Initial Review by Procurement">Initial Review</option>
+            <option value="Internal Approvals (Dept Head / Finance / BOD)">Internal Approvals</option>
+            <option value="Purchase Order Issued">PO Issued</option>
+            <option value="Delivery & Inspection">Delivery & Inspection</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+          <select id="po-f-priority" onchange="loadPurchaseOrders()">
+            <option value="">All Priority</option>
+            <option value="Urgent">Urgent</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+          <input type="text" id="po-f-search" placeholder="Search item, requestor..." oninput="loadPurchaseOrders()" style="min-width:180px" />
+          <button class="btn-secondary" onclick="resetPOFilter()">Clear</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>PO Code</th><th>Item</th><th>Requestor</th>
+                <th>Request Date</th><th>Status</th><th>Priority</th>
+                <th>Due Date</th><th>PO Issuance</th><th>Delivery & Inspection</th>
+                <th>Note</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="po-body">
+              <tr><td colspan="12" class="empty-td">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -302,6 +356,78 @@
       <div class="modal-actions">
         <button class="btn-success" onclick="xacNhanTra()">Confirm Return</button>
         <button class="btn-secondary" onclick="dongModal('modal-return')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PO ADD / EDIT -->
+  <div class="modal-overlay" id="modal-po">
+    <div class="modal" style="max-width:540px">
+      <h3 id="po-modal-title">New Purchase Order</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>PO Code</label>
+          <input type="text" id="po-code" placeholder="e.g. PO-000010" />
+        </div>
+        <div class="form-group">
+          <label>Priority *</label>
+          <select id="po-priority">
+            <option value="">-- Select --</option>
+            <option value="Urgent">Urgent</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Item *</label>
+        <input type="text" id="po-item" placeholder="Item description" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Requestor *</label>
+          <input type="text" id="po-requestor" placeholder="e.g. ICS, C&B, P&C" />
+        </div>
+        <div class="form-group">
+          <label>Request Date</label>
+          <input type="date" id="po-req-date" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status *</label>
+        <select id="po-status">
+          <option value="">-- Select status --</option>
+          <option value="Request for Quotations (RFQ)">Request for Quotations (RFQ)</option>
+          <option value="Initial Review by Procurement">Initial Review by Procurement</option>
+          <option value="Internal Approvals (Dept Head / Finance / BOD)">Internal Approvals (Dept Head / Finance / BOD)</option>
+          <option value="Purchase Order Issued">Purchase Order Issued</option>
+          <option value="Delivery & Inspection">Delivery & Inspection</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Due Date (from requestor)</label>
+          <input type="date" id="po-due-date" />
+        </div>
+        <div class="form-group">
+          <label>PO Issuance Date</label>
+          <input type="date" id="po-issue-date" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Delivery & Inspection Date</label>
+        <input type="date" id="po-delivery-date" />
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="po-note" placeholder="Optional note..." />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="savePO()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-po')">Cancel</button>
       </div>
     </div>
   </div>

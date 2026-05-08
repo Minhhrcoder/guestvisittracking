@@ -15,6 +15,8 @@ let currentId    = null;
 let allData      = [];
 let allCardLoans = [];
 let allLongLoans = [];
+let allPOs       = [];
+let editingPOId  = null;
 let currentTab   = "visitors";
 let currentSubTab = "short";
 
@@ -24,12 +26,15 @@ document.getElementById("cb-f-date").value = new Date().toISOString().split("T")
 // --- TABS ---
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById("tab-visitors").style.display    = tab === "visitors" ? "block" : "none";
-  document.getElementById("tab-cards").style.display       = tab === "cards"    ? "block" : "none";
+  document.getElementById("tab-visitors").style.display = tab === "visitors" ? "block" : "none";
+  document.getElementById("tab-cards").style.display    = tab === "cards"    ? "block" : "none";
+  document.getElementById("tab-po").style.display       = tab === "po"       ? "block" : "none";
   document.getElementById("tab-btn-visitors").classList.toggle("active", tab === "visitors");
   document.getElementById("tab-btn-cards").classList.toggle("active",    tab === "cards");
+  document.getElementById("tab-btn-po").classList.toggle("active",       tab === "po");
   if (tab === "visitors") loadVisitors();
   if (tab === "cards")    loadCardLoans();
+  if (tab === "po")       loadPurchaseOrders();
 }
 
 function switchSubTab(sub) {
@@ -44,6 +49,7 @@ function switchSubTab(sub) {
 
 function refreshCurrent() {
   if (currentTab === "visitors") loadVisitors();
+  else if (currentTab === "po") loadPurchaseOrders();
   else if (currentSubTab === "short") loadCardLoans();
   else loadLongTermLoans();
 }
@@ -415,10 +421,177 @@ function resetLongFilter() {
   loadLongTermLoans();
 }
 
+// =====================
+// PURCHASING
+// =====================
+const PO_STATUS_COLOR = {
+  "Request for Quotations (RFQ)":                  "#fefce8",
+  "Initial Review by Procurement":                  "#fef9c3",
+  "Internal Approvals (Dept Head / Finance / BOD)": "#ffedd5",
+  "Purchase Order Issued":                          "#dbeafe",
+  "Delivery & Inspection":                          "#d1fae5",
+  "Completed":                                      "#f0fdf4",
+  "Cancelled":                                      "#f1f5f9",
+};
+const PRIORITY_BADGE = {
+  Urgent: "background:#fee2e2;color:#991b1b",
+  High:   "background:#fef9c3;color:#92400e",
+  Medium: "background:#dbeafe;color:#1e40af",
+  Low:    "background:#f3f4f6;color:#6b7280",
+};
+
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+function isoToVN(iso) { return iso ? fmtDate(iso) : ""; }
+function vnToISO(vn) {
+  if (!vn) return "";
+  const [d, m, y] = vn.split("/");
+  return `${y}-${m}-${d}`;
+}
+
+async function loadPurchaseOrders() {
+  const tbody = document.getElementById("po-body");
+  tbody.innerHTML = `<tr><td colspan="12" class="empty-td">Loading...</td></tr>`;
+
+  allPOs = await dbGet("purchase_orders");
+  allPOs.sort((a, b) => (a.stt || 0) - (b.stt || 0));
+
+  const doneStatuses = ["Completed", "Cancelled"];
+  document.getElementById("po-total").textContent  = allPOs.length;
+  document.getElementById("po-urgent").textContent = allPOs.filter(p => p.priority === "Urgent" && !doneStatuses.includes(p.status)).length;
+  document.getElementById("po-inprog").textContent = allPOs.filter(p => !doneStatuses.includes(p.status)).length;
+  document.getElementById("po-done").textContent   = allPOs.filter(p => p.status === "Completed").length;
+
+  const fStatus   = document.getElementById("po-f-status").value;
+  const fPriority = document.getElementById("po-f-priority").value;
+  const fSearch   = document.getElementById("po-f-search").value.toLowerCase();
+
+  let ds = [...allPOs];
+  if (fStatus)   ds = ds.filter(p => p.status === fStatus);
+  if (fPriority) ds = ds.filter(p => p.priority === fPriority);
+  if (fSearch)   ds = ds.filter(p =>
+    (p.item || "").toLowerCase().includes(fSearch) ||
+    (p.requestor || "").toLowerCase().includes(fSearch) ||
+    (p.poCode || "").toLowerCase().includes(fSearch)
+  );
+
+  if (ds.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="12" class="empty-td">No records found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = ds.map((p, i) => {
+    const rowBg   = PO_STATUS_COLOR[p.status] || "#ffffff";
+    const priStyle = PRIORITY_BADGE[p.priority] || "";
+    return `
+    <tr style="background:${rowBg}">
+      <td>${p.stt || i + 1}</td>
+      <td>${p.poCode || "—"}</td>
+      <td><strong>${p.item}</strong></td>
+      <td>${p.requestor || "—"}</td>
+      <td>${p.requestDate || "—"}</td>
+      <td style="font-size:12px">${p.status}</td>
+      <td><span style="padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;${priStyle}">${p.priority || "—"}</span></td>
+      <td>${p.dueDate || "—"}</td>
+      <td>${p.issueDate || "—"}</td>
+      <td>${p.deliveryDate || "—"}</td>
+      <td style="font-size:12px;color:#6b7280">${p.note || "—"}</td>
+      <td>
+        <button class="btn-warning" onclick="openPOModal('${p.id}')">Edit</button>
+        ${canDelete ? `<button class="btn-danger" onclick="deletePO('${p.id}')">Delete</button>` : ""}
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function openPOModal(id) {
+  editingPOId = id;
+  const isEdit = !!id;
+  document.getElementById("po-modal-title").textContent = isEdit ? "Edit Purchase Order" : "New Purchase Order";
+
+  if (isEdit) {
+    const p = allPOs.find(x => x.id === id);
+    document.getElementById("po-code").value          = p.poCode || "";
+    document.getElementById("po-item").value          = p.item || "";
+    document.getElementById("po-requestor").value     = p.requestor || "";
+    document.getElementById("po-req-date").value      = vnToISO(p.requestDate);
+    document.getElementById("po-status").value        = p.status || "";
+    document.getElementById("po-priority").value      = p.priority || "";
+    document.getElementById("po-due-date").value      = vnToISO(p.dueDate);
+    document.getElementById("po-issue-date").value    = vnToISO(p.issueDate);
+    document.getElementById("po-delivery-date").value = vnToISO(p.deliveryDate);
+    document.getElementById("po-note").value          = p.note || "";
+  } else {
+    document.getElementById("po-code").value          = "";
+    document.getElementById("po-item").value          = "";
+    document.getElementById("po-requestor").value     = "";
+    document.getElementById("po-req-date").value      = new Date().toISOString().split("T")[0];
+    document.getElementById("po-status").value        = "Request for Quotations (RFQ)";
+    document.getElementById("po-priority").value      = "";
+    document.getElementById("po-due-date").value      = "";
+    document.getElementById("po-issue-date").value    = "";
+    document.getElementById("po-delivery-date").value = "";
+    document.getElementById("po-note").value          = "";
+  }
+  document.getElementById("modal-po").classList.add("active");
+}
+
+async function savePO() {
+  const item      = document.getElementById("po-item").value.trim();
+  const requestor = document.getElementById("po-requestor").value.trim();
+  const status    = document.getElementById("po-status").value;
+  const priority  = document.getElementById("po-priority").value;
+
+  if (!item || !status || !priority) {
+    alert("Please fill in Item, Status and Priority!"); return;
+  }
+
+  const data = {
+    poCode:       document.getElementById("po-code").value.trim(),
+    item,
+    requestor,
+    requestDate:  isoToVN(document.getElementById("po-req-date").value),
+    status,
+    priority,
+    dueDate:      isoToVN(document.getElementById("po-due-date").value),
+    issueDate:    isoToVN(document.getElementById("po-issue-date").value),
+    deliveryDate: isoToVN(document.getElementById("po-delivery-date").value),
+    note:         document.getElementById("po-note").value.trim(),
+  };
+
+  if (editingPOId) {
+    await dbUpdate("purchase_orders", editingPOId, data);
+  } else {
+    const id  = Date.now().toString();
+    const stt = allPOs.length + 1;
+    await dbSet("purchase_orders", id, { id, stt, ...data, createdAt: new Date().toLocaleString("en-GB") });
+  }
+
+  dongModal("modal-po");
+  loadPurchaseOrders();
+}
+
+async function deletePO(id) {
+  if (!confirm("Are you sure you want to delete this record?")) return;
+  await dbDelete("purchase_orders", id);
+  loadPurchaseOrders();
+}
+
+function resetPOFilter() {
+  document.getElementById("po-f-status").value   = "";
+  document.getElementById("po-f-priority").value = "";
+  document.getElementById("po-f-search").value   = "";
+  loadPurchaseOrders();
+}
+
 // --- INIT ---
 loadVisitors();
 setInterval(() => {
   if (currentTab === "visitors") loadVisitors();
+  else if (currentTab === "po") loadPurchaseOrders();
   else if (currentSubTab === "short") loadCardLoans();
   else loadLongTermLoans();
 }, 60000);
