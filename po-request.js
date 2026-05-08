@@ -9,8 +9,11 @@ document.getElementById("form-po").addEventListener("submit", async function (e)
   const item     = document.getElementById("pr-item").value.trim();
   const name     = document.getElementById("pr-name").value.trim();
   const dept     = document.getElementById("pr-dept").value.trim();
+  const company  = document.getElementById("pr-company").value;
+  const qty      = document.getElementById("pr-qty").value;
   const priority = document.getElementById("pr-priority").value;
   const dueISO   = document.getElementById("pr-due").value;
+  const link     = document.getElementById("pr-link").value.trim();
   const budget   = document.getElementById("pr-budget").value;
   const note     = document.getElementById("pr-note").value.trim();
 
@@ -35,6 +38,9 @@ document.getElementById("form-po").addEventListener("submit", async function (e)
     dueDate,
     issueDate:    "",
     deliveryDate: "",
+    company,
+    quantity:     qty,
+    productLink:  link,
     budgetType:   budget,
     note,
     submittedBy:  name,

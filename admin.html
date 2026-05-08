@@ -206,14 +206,14 @@
           <table>
             <thead>
               <tr>
-                <th>#</th><th>PO Code</th><th>Item</th><th>Requestor</th>
-                <th>Request Date</th><th>Status</th><th>Priority</th><th>Budget Type</th>
-                <th>Due Date</th><th>PO Issuance</th><th>Delivery & Inspection</th>
-                <th>Note</th><th>Actions</th>
+                <th>#</th><th>PO Code</th><th>Item</th><th>Company</th><th>Qty</th>
+                <th>Requestor</th><th>Request Date</th><th>Status</th><th>Priority</th>
+                <th>Budget Type</th><th>Due Date</th><th>PO Issuance</th>
+                <th>Delivery & Inspection</th><th>Product Link</th><th>Note</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="po-body">
-              <tr><td colspan="13" class="empty-td">Loading...</td></tr>
+              <tr><td colspan="16" class="empty-td">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -374,6 +374,21 @@
           <input type="text" id="po-code" placeholder="e.g. PO-000010" />
         </div>
         <div class="form-group">
+          <label>Company</label>
+          <select id="po-company">
+            <option value="">-- Select --</option>
+            <option value="Orient">Orient</option>
+            <option value="Bravo">Bravo</option>
+            <option value="Neurond">Neurond</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Quantity</label>
+          <input type="number" id="po-qty" placeholder="e.g. 5" min="1" />
+        </div>
+        <div class="form-group">
           <label>Priority *</label>
           <select id="po-priority">
             <option value="">-- Select --</option>
@@ -425,6 +440,10 @@
       <div class="form-group">
         <label>Delivery & Inspection Date</label>
         <input type="date" id="po-delivery-date" />
+      </div>
+      <div class="form-group">
+        <label>Product Link</label>
+        <input type="url" id="po-link" placeholder="https://... (optional)" />
       </div>
       <div class="form-group">
         <label>Budget Type</label>

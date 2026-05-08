@@ -30,7 +30,20 @@
             <input type="text" id="pr-dept" placeholder="e.g. ICS, C&B, P&C" required />
           </div>
         </div>
+        <div class="form-group">
+          <label>Company (Purchase for) *</label>
+          <select id="pr-company" required>
+            <option value="">-- Select company --</option>
+            <option value="Orient">Orient</option>
+            <option value="Bravo">Bravo</option>
+            <option value="Neurond">Neurond</option>
+          </select>
+        </div>
         <div class="form-row">
+          <div class="form-group">
+            <label>Quantity *</label>
+            <input type="number" id="pr-qty" placeholder="e.g. 5" min="1" required />
+          </div>
           <div class="form-group">
             <label>Priority *</label>
             <select id="pr-priority" required>
@@ -41,10 +54,14 @@
               <option value="Low">Low</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Date Needed By</label>
-            <input type="date" id="pr-due" />
-          </div>
+        </div>
+        <div class="form-group">
+          <label>Date Needed By</label>
+          <input type="date" id="pr-due" />
+        </div>
+        <div class="form-group">
+          <label>Product Link</label>
+          <input type="url" id="pr-link" placeholder="https://... (optional)" />
         </div>
         <div class="form-group">
           <label>Budget Type *</label>

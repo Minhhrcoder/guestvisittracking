@@ -65,9 +65,12 @@ async function trackRequest() {
       </div>
 
       <div class="track-field"><span class="track-label">Submitted by</span><span class="track-value">${po.requestor || "—"}</span></div>
+      <div class="track-field"><span class="track-label">Company</span><span class="track-value">${po.company || "—"}</span></div>
+      <div class="track-field"><span class="track-label">Quantity</span><span class="track-value">${po.quantity || "—"}</span></div>
       <div class="track-field"><span class="track-label">Request Date</span><span class="track-value">${po.requestDate || "—"}</span></div>
       <div class="track-field"><span class="track-label">Date Needed By</span><span class="track-value">${po.dueDate || "—"}</span></div>
       <div class="track-field"><span class="track-label">Budget Type</span><span class="track-value">${po.budgetType || "—"}</span></div>
+      ${po.productLink ? `<div class="track-field"><span class="track-label">Product Link</span><span class="track-value"><a href="${po.productLink}" target="_blank" style="color:#1a56db">View →</a></span></div>` : ""}
       ${po.poCode ? `<div class="track-field"><span class="track-label">PO Code</span><span class="track-value">${po.poCode}</span></div>` : ""}
       ${po.issueDate ? `<div class="track-field"><span class="track-label">PO Issuance Date</span><span class="track-value">${po.issueDate}</span></div>` : ""}
       ${po.deliveryDate ? `<div class="track-field"><span class="track-label">Delivery & Inspection</span><span class="track-value">${po.deliveryDate}</span></div>` : ""}

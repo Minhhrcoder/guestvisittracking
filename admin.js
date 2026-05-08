@@ -480,7 +480,7 @@ async function loadPurchaseOrders() {
   );
 
   if (ds.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="13" class="empty-td">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="16" class="empty-td">No records found.</td></tr>`;
     return;
   }
 
@@ -492,6 +492,8 @@ async function loadPurchaseOrders() {
       <td>${p.stt || i + 1}</td>
       <td>${p.poCode || "—"}</td>
       <td><strong>${p.item}</strong></td>
+      <td>${p.company || "—"}</td>
+      <td>${p.quantity || "—"}</td>
       <td>${p.requestor || "—"}</td>
       <td>${p.requestDate || "—"}</td>
       <td style="font-size:12px">${p.status}</td>
@@ -500,6 +502,7 @@ async function loadPurchaseOrders() {
       <td>${p.dueDate || "—"}</td>
       <td>${p.issueDate || "—"}</td>
       <td>${p.deliveryDate || "—"}</td>
+      <td>${p.productLink ? `<a href="${p.productLink}" target="_blank" style="color:#1a56db;font-size:12px">Link →</a>` : "—"}</td>
       <td style="font-size:12px;color:#6b7280">${p.note || "—"}</td>
       <td>
         <button class="btn-warning" onclick="openPOModal('${p.id}')">Edit</button>
@@ -517,6 +520,8 @@ function openPOModal(id) {
   if (isEdit) {
     const p = allPOs.find(x => x.id === id);
     document.getElementById("po-code").value          = p.poCode || "";
+    document.getElementById("po-company").value       = p.company || "";
+    document.getElementById("po-qty").value           = p.quantity || "";
     document.getElementById("po-item").value          = p.item || "";
     document.getElementById("po-requestor").value     = p.requestor || "";
     document.getElementById("po-req-date").value      = vnToISO(p.requestDate);
@@ -525,10 +530,13 @@ function openPOModal(id) {
     document.getElementById("po-due-date").value      = vnToISO(p.dueDate);
     document.getElementById("po-issue-date").value    = vnToISO(p.issueDate);
     document.getElementById("po-delivery-date").value = vnToISO(p.deliveryDate);
+    document.getElementById("po-link").value          = p.productLink || "";
     document.getElementById("po-budget").value        = p.budgetType || "";
     document.getElementById("po-note").value          = p.note || "";
   } else {
     document.getElementById("po-code").value          = "";
+    document.getElementById("po-company").value       = "";
+    document.getElementById("po-qty").value           = "";
     document.getElementById("po-item").value          = "";
     document.getElementById("po-requestor").value     = "";
     document.getElementById("po-req-date").value      = new Date().toISOString().split("T")[0];
@@ -537,6 +545,7 @@ function openPOModal(id) {
     document.getElementById("po-due-date").value      = "";
     document.getElementById("po-issue-date").value    = "";
     document.getElementById("po-delivery-date").value = "";
+    document.getElementById("po-link").value          = "";
     document.getElementById("po-budget").value        = "";
     document.getElementById("po-note").value          = "";
   }
@@ -563,6 +572,9 @@ async function savePO() {
     dueDate:      isoToVN(document.getElementById("po-due-date").value),
     issueDate:    isoToVN(document.getElementById("po-issue-date").value),
     deliveryDate: isoToVN(document.getElementById("po-delivery-date").value),
+    company:      document.getElementById("po-company").value,
+    quantity:     document.getElementById("po-qty").value,
+    productLink:  document.getElementById("po-link").value.trim(),
     budgetType:   document.getElementById("po-budget").value,
     note:         document.getElementById("po-note").value.trim(),
   };
