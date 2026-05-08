@@ -67,6 +67,7 @@ async function trackRequest() {
       <div class="track-field"><span class="track-label">Submitted by</span><span class="track-value">${po.requestor || "—"}</span></div>
       <div class="track-field"><span class="track-label">Request Date</span><span class="track-value">${po.requestDate || "—"}</span></div>
       <div class="track-field"><span class="track-label">Date Needed By</span><span class="track-value">${po.dueDate || "—"}</span></div>
+      <div class="track-field"><span class="track-label">Budget Type</span><span class="track-value">${po.budgetType || "—"}</span></div>
       ${po.poCode ? `<div class="track-field"><span class="track-label">PO Code</span><span class="track-value">${po.poCode}</span></div>` : ""}
       ${po.issueDate ? `<div class="track-field"><span class="track-label">PO Issuance Date</span><span class="track-value">${po.issueDate}</span></div>` : ""}
       ${po.deliveryDate ? `<div class="track-field"><span class="track-label">Delivery & Inspection</span><span class="track-value">${po.deliveryDate}</span></div>` : ""}

@@ -11,6 +11,7 @@ document.getElementById("form-po").addEventListener("submit", async function (e)
   const dept     = document.getElementById("pr-dept").value.trim();
   const priority = document.getElementById("pr-priority").value;
   const dueISO   = document.getElementById("pr-due").value;
+  const budget   = document.getElementById("pr-budget").value;
   const note     = document.getElementById("pr-note").value.trim();
 
   const id  = Date.now().toString();
@@ -34,6 +35,7 @@ document.getElementById("form-po").addEventListener("submit", async function (e)
     dueDate,
     issueDate:    "",
     deliveryDate: "",
+    budgetType:   budget,
     note,
     submittedBy:  name,
     department:   dept,

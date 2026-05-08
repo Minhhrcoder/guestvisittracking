@@ -480,7 +480,7 @@ async function loadPurchaseOrders() {
   );
 
   if (ds.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="12" class="empty-td">No records found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="empty-td">No records found.</td></tr>`;
     return;
   }
 
@@ -496,6 +496,7 @@ async function loadPurchaseOrders() {
       <td>${p.requestDate || "—"}</td>
       <td style="font-size:12px">${p.status}</td>
       <td><span style="padding:2px 8px;border-radius:12px;font-size:12px;font-weight:600;${priStyle}">${p.priority || "—"}</span></td>
+      <td style="font-size:12px">${p.budgetType === "Annual Budget" ? "📅 Annual" : p.budgetType === "Additional Budget" ? "⚡ Additional" : "—"}</td>
       <td>${p.dueDate || "—"}</td>
       <td>${p.issueDate || "—"}</td>
       <td>${p.deliveryDate || "—"}</td>
@@ -524,6 +525,7 @@ function openPOModal(id) {
     document.getElementById("po-due-date").value      = vnToISO(p.dueDate);
     document.getElementById("po-issue-date").value    = vnToISO(p.issueDate);
     document.getElementById("po-delivery-date").value = vnToISO(p.deliveryDate);
+    document.getElementById("po-budget").value        = p.budgetType || "";
     document.getElementById("po-note").value          = p.note || "";
   } else {
     document.getElementById("po-code").value          = "";
@@ -535,6 +537,7 @@ function openPOModal(id) {
     document.getElementById("po-due-date").value      = "";
     document.getElementById("po-issue-date").value    = "";
     document.getElementById("po-delivery-date").value = "";
+    document.getElementById("po-budget").value        = "";
     document.getElementById("po-note").value          = "";
   }
   document.getElementById("modal-po").classList.add("active");
@@ -560,6 +563,7 @@ async function savePO() {
     dueDate:      isoToVN(document.getElementById("po-due-date").value),
     issueDate:    isoToVN(document.getElementById("po-issue-date").value),
     deliveryDate: isoToVN(document.getElementById("po-delivery-date").value),
+    budgetType:   document.getElementById("po-budget").value,
     note:         document.getElementById("po-note").value.trim(),
   };
 
