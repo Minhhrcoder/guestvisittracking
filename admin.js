@@ -124,7 +124,7 @@ async function loadVisitors() {
       <td><strong>${v.visitorName}</strong></td>
       <td>${v.companyName}</td>
       <td>${v.idNumber || "—"}</td>
-      <td>${v.visitorCardNo ? `<strong>${v.visitorCardNo}</strong>` : `<button class="btn-warning" onclick="moModalThe('${v.id}')">+ Assign Card</button>`}</td>
+      <td>${v.visitorCardNo ? `<strong>${v.visitorCardNo}</strong>` : "—"}</td>
       <td>${v.purpose}</td>
       <td>${v.meetPerson || "—"}</td>
       <td>${locBadge(v.location)}</td>
@@ -191,6 +191,7 @@ function resetFilter() {
 
 function showCurrentlyIn() {
   const list = allData.filter(v => v.status === "in");
+  if (list.length === 0) return;
   const container = document.getElementById("currently-in-list");
   if (list.length === 0) {
     container.innerHTML = `<p style="text-align:center;color:#6b7280;padding:20px">No visitors currently in office.</p>`;
