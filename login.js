@@ -1,6 +1,7 @@
 const ACCOUNTS = {
-  "admin":     { password: "admin@123",  role: "admin",     name: "Admin" },
-  "reception": { password: "recep@123",  role: "reception", name: "Reception" },
+  "admin":      { password: "admin@123",   role: "admin",     name: "Admin",      canAccessPO: true  },
+  "reception":  { password: "recep@123",   role: "reception", name: "Reception",  canAccessPO: false },
+  "purchasing": { password: "po@123",      role: "reception", name: "Purchasing", canAccessPO: true  },
 };
 
 if (sessionStorage.getItem("gvt_user")) {
@@ -24,6 +25,7 @@ document.getElementById("login-form").addEventListener("submit", function (e) {
     username,
     role: acc.role,
     name: acc.name,
+    canAccessPO: acc.canAccessPO || false,
   }));
 
   window.location.href = "admin.html";

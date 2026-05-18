@@ -2,8 +2,10 @@
 const gvtUser = JSON.parse(sessionStorage.getItem("gvt_user") || "null");
 if (!gvtUser) window.location.href = "login.html";
 
-const canDelete = gvtUser && gvtUser.role === "admin";
+const canDelete   = gvtUser && gvtUser.role === "admin";
+const canAccessPO = gvtUser && gvtUser.canAccessPO;
 document.getElementById("user-label").textContent = "👤 " + (gvtUser ? gvtUser.name : "");
+if (!canAccessPO) document.getElementById("tab-btn-po").style.display = "none";
 
 function logout() {
   sessionStorage.removeItem("gvt_user");
@@ -28,6 +30,7 @@ document.getElementById("cb-f-date-to").value   = todayISO;
 
 // --- TABS ---
 function switchTab(tab) {
+  if (tab === "po" && !canAccessPO) return;
   currentTab = tab;
   document.getElementById("tab-visitors").style.display = tab === "visitors" ? "block" : "none";
   document.getElementById("tab-cards").style.display    = tab === "cards"    ? "block" : "none";
@@ -514,6 +517,16 @@ function resetLongFilter() {
 // =====================
 // PURCHASING
 // =====================
+const PO_STATUS_STEPS = [
+  "Pending Review",
+  "Initial Review by Procurement",
+  "Request for Quotations (RFQ)",
+  "Internal Approvals (Dept Head / Finance / BOD)",
+  "Purchase Order Issued",
+  "Delivery & Inspection",
+  "Completed",
+];
+
 const PO_STATUS_COLOR = {
   "Pending Review":                                 "#f3f4f6",
   "Request for Quotations (RFQ)":                  "#fefce8",
@@ -630,7 +643,7 @@ function openPOModal(id) {
     document.getElementById("po-item").value          = "";
     document.getElementById("po-requestor").value     = "";
     document.getElementById("po-req-date").value      = new Date().toISOString().split("T")[0];
-    document.getElementById("po-status").value        = "Request for Quotations (RFQ)";
+    document.getElementById("po-status").value        = "Pending Review";
     document.getElementById("po-priority").value      = "";
     document.getElementById("po-due-date").value      = "";
     document.getElementById("po-issue-date").value    = "";
@@ -639,6 +652,27 @@ function openPOModal(id) {
     document.getElementById("po-budget").value        = "";
     document.getElementById("po-note").value          = "";
   }
+
+  // Timeline
+  const tlSection = document.getElementById("po-timeline-section");
+  const tlDisplay = document.getElementById("po-timeline-display");
+  if (isEdit) {
+    const history = (allPOs.find(x => x.id === id) || {}).statusHistory || {};
+    tlDisplay.innerHTML = PO_STATUS_STEPS.map(step => {
+      const date = history[step];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;border-bottom:1px solid #f3f4f6">
+        <span style="width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;${date ? 'background:#16a34a;color:white' : 'background:#e5e7eb;color:#9ca3af'}">
+          ${date ? "✓" : "○"}
+        </span>
+        <span style="${date ? "color:#111827;font-weight:500" : "color:#9ca3af"};flex:1">${step}</span>
+        <span style="color:#6b7280;font-size:12px;white-space:nowrap">${date || "—"}</span>
+      </div>`;
+    }).join("");
+    tlSection.style.display = "block";
+  } else {
+    tlSection.style.display = "none";
+  }
+
   document.getElementById("modal-po").classList.add("active");
 }
 
@@ -652,21 +686,31 @@ async function savePO() {
     alert("Please fill in Item, Status and Priority!"); return;
   }
 
+  const oldPO          = editingPOId ? allPOs.find(x => x.id === editingPOId) : null;
+  const existingHistory = oldPO ? (oldPO.statusHistory || {}) : {};
+  const newHistory      = { ...existingHistory };
+  if (!editingPOId) {
+    newHistory["Pending Review"] = nowDate();
+  } else if (oldPO && oldPO.status !== status && status !== "Cancelled") {
+    newHistory[status] = nowDate();
+  }
+
   const data = {
-    poCode:       document.getElementById("po-code").value.trim(),
+    poCode:        document.getElementById("po-code").value.trim(),
     item,
     requestor,
-    requestDate:  isoToVN(document.getElementById("po-req-date").value),
+    requestDate:   isoToVN(document.getElementById("po-req-date").value),
     status,
     priority,
-    dueDate:      isoToVN(document.getElementById("po-due-date").value),
-    issueDate:    isoToVN(document.getElementById("po-issue-date").value),
-    deliveryDate: isoToVN(document.getElementById("po-delivery-date").value),
-    company:      document.getElementById("po-company").value,
-    quantity:     document.getElementById("po-qty").value,
-    productLink:  document.getElementById("po-link").value.trim(),
-    budgetType:   document.getElementById("po-budget").value,
-    note:         document.getElementById("po-note").value.trim(),
+    dueDate:       isoToVN(document.getElementById("po-due-date").value),
+    issueDate:     isoToVN(document.getElementById("po-issue-date").value),
+    deliveryDate:  isoToVN(document.getElementById("po-delivery-date").value),
+    company:       document.getElementById("po-company").value,
+    quantity:      document.getElementById("po-qty").value,
+    productLink:   document.getElementById("po-link").value.trim(),
+    budgetType:    document.getElementById("po-budget").value,
+    note:          document.getElementById("po-note").value.trim(),
+    statusHistory: newHistory,
   };
 
   if (editingPOId) {
