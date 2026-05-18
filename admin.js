@@ -137,6 +137,7 @@ async function loadVisitors() {
       <td><span class="badge badge-${v.status}">${v.status === "in" ? "In Office" : "Checked Out"}</span></td>
       <td>
         ${v.status === "in" ? `<button class="btn-success" onclick="moCheckout('${v.id}')">Check-out</button>` : ""}
+        <button class="btn-warning" onclick="openEditVisitor('${v.id}')">Edit</button>
         ${canDelete ? `<button class="btn-danger" onclick="xoaKhach('${v.id}')">Delete</button>` : ""}
       </td>
     </tr>
@@ -292,6 +293,7 @@ async function loadCardLoans() {
       <td><span class="badge badge-${v.status === 'borrowed' ? 'in' : 'out'}">${v.status === "borrowed" ? "Borrowed" : "Returned"}</span></td>
       <td>
         ${v.status === "borrowed" ? `<button class="btn-success" onclick="moModalTra('${v.id}')">Return</button>` : ""}
+        <button class="btn-warning" onclick="openEditLoan('${v.id}')">Edit</button>
         ${canDelete ? `<button class="btn-danger" onclick="xoaMuon('${v.id}')">Delete</button>` : ""}
       </td>
     </tr>
@@ -440,6 +442,7 @@ async function loadLongTermLoans() {
       <td><span class="badge badge-${v.status === 'borrowed' ? 'in' : 'out'}">${v.status === "borrowed" ? "Holding" : "Returned"}</span></td>
       <td>
         ${v.status === "borrowed" ? `<button class="btn-success" onclick="moModalTraDai('${v.id}')">Return</button>` : ""}
+        <button class="btn-warning" onclick="openEditLongLoan('${v.id}')">Edit</button>
         ${canDelete ? `<button class="btn-danger" onclick="xoaMuonDai('${v.id}')">Delete</button>` : ""}
       </td>
     </tr>
@@ -728,6 +731,108 @@ function resetPOFilter() {
   document.getElementById("po-f-priority").value = "";
   document.getElementById("po-f-search").value   = "";
   loadPurchaseOrders();
+}
+
+// =====================
+// EDIT RECORDS
+// =====================
+function openEditVisitor(id) {
+  currentId = id;
+  const v = allData.find(x => x.id === id);
+  document.getElementById("ev-name").value      = v.visitorName  || "";
+  document.getElementById("ev-company").value   = v.companyName  || "";
+  document.getElementById("ev-id").value        = v.idNumber     || "";
+  document.getElementById("ev-cardno").value    = v.visitorCardNo || "";
+  document.getElementById("ev-purpose").value   = v.purpose      || "";
+  document.getElementById("ev-meetperson").value = v.meetPerson  || "";
+  document.getElementById("ev-location").value  = v.location     || "";
+  document.getElementById("ev-date-in").value   = vnToISO(v.dateIn);
+  document.getElementById("ev-time-in").value   = v.timeIn       || "";
+  document.getElementById("ev-date-out").value  = vnToISO(v.dateOut);
+  document.getElementById("ev-time-out").value  = v.timeOut      || "";
+  document.getElementById("modal-edit-visitor").classList.add("active");
+}
+
+async function saveEditVisitor() {
+  const name = document.getElementById("ev-name").value.trim();
+  if (!name) { alert("Visitor name is required!"); return; }
+  await dbUpdate("visitors", currentId, {
+    visitorName:   name,
+    companyName:   document.getElementById("ev-company").value.trim(),
+    idNumber:      document.getElementById("ev-id").value.trim(),
+    visitorCardNo: document.getElementById("ev-cardno").value.trim(),
+    purpose:       document.getElementById("ev-purpose").value.trim(),
+    meetPerson:    document.getElementById("ev-meetperson").value.trim(),
+    location:      document.getElementById("ev-location").value,
+    dateIn:        toDateVN(document.getElementById("ev-date-in").value),
+    timeIn:        document.getElementById("ev-time-in").value,
+    dateOut:       toDateVN(document.getElementById("ev-date-out").value),
+    timeOut:       document.getElementById("ev-time-out").value,
+  });
+  dongModal("modal-edit-visitor");
+  loadVisitors();
+}
+
+function openEditLoan(id) {
+  currentId = id;
+  const v = allCardLoans.find(x => x.id === id);
+  document.getElementById("el-name").value        = v.employeeName || "";
+  document.getElementById("el-company").value     = v.company      || "";
+  document.getElementById("el-type").value        = v.cardType     || "";
+  document.getElementById("el-reason").value      = v.reason       || "";
+  document.getElementById("el-borrow-date").value = vnToISO(v.borrowDate);
+  document.getElementById("el-borrow-time").value = v.borrowTime   || "";
+  document.getElementById("el-return-date").value = vnToISO(v.returnDate);
+  document.getElementById("el-return-time").value = v.returnTime   || "";
+  document.getElementById("modal-edit-loan").classList.add("active");
+}
+
+async function saveEditLoan() {
+  const name = document.getElementById("el-name").value.trim();
+  const type = document.getElementById("el-type").value.trim();
+  if (!name || !type) { alert("Employee name and card type are required!"); return; }
+  await dbUpdate("card_loans", currentId, {
+    employeeName: name,
+    company:      document.getElementById("el-company").value,
+    cardType:     type,
+    reason:       document.getElementById("el-reason").value.trim(),
+    borrowDate:   toDateVN(document.getElementById("el-borrow-date").value),
+    borrowTime:   document.getElementById("el-borrow-time").value,
+    returnDate:   toDateVN(document.getElementById("el-return-date").value),
+    returnTime:   document.getElementById("el-return-time").value,
+  });
+  dongModal("modal-edit-loan");
+  loadCardLoans();
+}
+
+function openEditLongLoan(id) {
+  currentId = id;
+  const v = allLongLoans.find(x => x.id === id);
+  document.getElementById("ell-name").value        = v.employeeName   || "";
+  document.getElementById("ell-company").value     = v.company        || "";
+  document.getElementById("ell-type").value        = v.cardType       || "";
+  document.getElementById("ell-borrow-date").value = vnToISO(v.borrowDate);
+  document.getElementById("ell-return-date").value = vnToISO(v.expectedReturn);
+  document.getElementById("ell-actual-date").value = vnToISO(v.actualReturn);
+  document.getElementById("ell-note").value        = v.note           || "";
+  document.getElementById("modal-edit-long-loan").classList.add("active");
+}
+
+async function saveEditLongLoan() {
+  const name = document.getElementById("ell-name").value.trim();
+  const type = document.getElementById("ell-type").value.trim();
+  if (!name || !type) { alert("Employee name and card type are required!"); return; }
+  await dbUpdate("card_loans_long", currentId, {
+    employeeName:   name,
+    company:        document.getElementById("ell-company").value,
+    cardType:       type,
+    borrowDate:     toDateVN(document.getElementById("ell-borrow-date").value),
+    expectedReturn: toDateVN(document.getElementById("ell-return-date").value),
+    actualReturn:   toDateVN(document.getElementById("ell-actual-date").value),
+    note:           document.getElementById("ell-note").value.trim(),
+  });
+  dongModal("modal-edit-long-loan");
+  loadLongTermLoans();
 }
 
 // --- INIT ---

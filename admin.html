@@ -493,6 +493,176 @@
     </div>
   </div>
 
+  <!-- MODAL: EDIT VISITOR -->
+  <div class="modal-overlay" id="modal-edit-visitor">
+    <div class="modal">
+      <h3>Edit Visitor Record</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Visitor Name *</label>
+          <input type="text" id="ev-name" />
+        </div>
+        <div class="form-group">
+          <label>Company</label>
+          <input type="text" id="ev-company" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ID / Passport</label>
+          <input type="text" id="ev-id" />
+        </div>
+        <div class="form-group">
+          <label>Visitor Card No.</label>
+          <input type="text" id="ev-cardno" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Purpose</label>
+          <input type="text" id="ev-purpose" />
+        </div>
+        <div class="form-group">
+          <label>Person to Meet</label>
+          <input type="text" id="ev-meetperson" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Office</label>
+        <select id="ev-location">
+          <option value="HCM">Ho Chi Minh City</option>
+          <option value="DN">Da Nang</option>
+          <option value="HN">Ha Noi</option>
+          <option value="Hue">Hue</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date In</label>
+          <input type="date" id="ev-date-in" />
+        </div>
+        <div class="form-group">
+          <label>Time In</label>
+          <input type="time" id="ev-time-in" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date Out</label>
+          <input type="date" id="ev-date-out" />
+        </div>
+        <div class="form-group">
+          <label>Time Out</label>
+          <input type="time" id="ev-time-out" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="saveEditVisitor()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-edit-visitor')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT SHORT-TERM LOAN -->
+  <div class="modal-overlay" id="modal-edit-loan">
+    <div class="modal">
+      <h3>Edit Borrow Record</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Employee Name *</label>
+          <input type="text" id="el-name" />
+        </div>
+        <div class="form-group">
+          <label>Company *</label>
+          <select id="el-company">
+            <option value="Orient">Orient</option>
+            <option value="Bravo">Bravo</option>
+            <option value="Neurond">Neurond</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Card Type *</label>
+        <input type="text" id="el-type" />
+      </div>
+      <div class="form-group">
+        <label>Reason</label>
+        <input type="text" id="el-reason" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Borrow Date</label>
+          <input type="date" id="el-borrow-date" />
+        </div>
+        <div class="form-group">
+          <label>Borrow Time</label>
+          <input type="time" id="el-borrow-time" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Return Date</label>
+          <input type="date" id="el-return-date" />
+        </div>
+        <div class="form-group">
+          <label>Return Time</label>
+          <input type="time" id="el-return-time" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="saveEditLoan()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-edit-loan')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT LONG-TERM LOAN -->
+  <div class="modal-overlay" id="modal-edit-long-loan">
+    <div class="modal">
+      <h3>Edit Long-term Record</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Employee Name *</label>
+          <input type="text" id="ell-name" />
+        </div>
+        <div class="form-group">
+          <label>Company *</label>
+          <select id="ell-company">
+            <option value="Orient">Orient</option>
+            <option value="Bravo">Bravo</option>
+            <option value="Neurond">Neurond</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Card Type *</label>
+        <input type="text" id="ell-type" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Borrow Date</label>
+          <input type="date" id="ell-borrow-date" />
+        </div>
+        <div class="form-group">
+          <label>Expected Return Date</label>
+          <input type="date" id="ell-return-date" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Actual Return Date</label>
+        <input type="date" id="ell-actual-date" />
+      </div>
+      <div class="form-group">
+        <label>Note</label>
+        <input type="text" id="ell-note" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="saveEditLongLoan()">Save</button>
+        <button class="btn-secondary" onclick="dongModal('modal-edit-long-loan')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: CURRENTLY IN LIST -->
   <div class="modal-overlay" id="modal-currently-in">
     <div class="modal" style="max-width:620px">
