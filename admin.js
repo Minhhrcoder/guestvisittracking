@@ -20,8 +20,11 @@ let editingPOId  = null;
 let currentTab   = "visitors";
 let currentSubTab = "short";
 
-document.getElementById("f-date").value    = new Date().toISOString().split("T")[0];
-document.getElementById("cb-f-date").value = new Date().toISOString().split("T")[0];
+const todayISO = new Date().toISOString().split("T")[0];
+document.getElementById("f-date-from").value    = todayISO;
+document.getElementById("f-date-to").value      = todayISO;
+document.getElementById("cb-f-date-from").value = todayISO;
+document.getElementById("cb-f-date-to").value   = todayISO;
 
 // --- TABS ---
 function switchTab(tab) {
@@ -89,15 +92,22 @@ async function loadVisitors() {
   document.getElementById("s-out").textContent   = allData.filter(v => v.status === "out" && v.dateIn === today).length;
   document.getElementById("s-total").textContent = allData.filter(v => v.dateIn && v.dateIn.slice(3) === thisMonth).length;
 
-  const fLoc    = document.getElementById("f-loc").value;
-  const fStatus = document.getElementById("f-status").value;
-  const fDate   = document.getElementById("f-date").value;
-  const fSearch = document.getElementById("f-search").value.toLowerCase();
+  const fLoc      = document.getElementById("f-loc").value;
+  const fStatus   = document.getElementById("f-status").value;
+  const fDateFrom = document.getElementById("f-date-from").value;
+  const fDateTo   = document.getElementById("f-date-to").value;
+  const fSearch   = document.getElementById("f-search").value.toLowerCase();
 
   let ds = [...allData];
   if (fLoc)    ds = ds.filter(v => v.location === fLoc);
   if (fStatus) ds = ds.filter(v => v.status === fStatus);
-  if (fDate)   ds = ds.filter(v => v.dateIn === toDateVN(fDate));
+  if (fDateFrom || fDateTo) ds = ds.filter(v => {
+    const iso = vnToISO(v.dateIn);
+    if (!iso) return false;
+    if (fDateFrom && iso < fDateFrom) return false;
+    if (fDateTo   && iso > fDateTo)   return false;
+    return true;
+  });
   if (fSearch) ds = ds.filter(v =>
     v.visitorName.toLowerCase().includes(fSearch) ||
     v.companyName.toLowerCase().includes(fSearch)
@@ -150,12 +160,16 @@ function moCheckout(id) {
   currentId = id;
   const v = allData.find(x => x.id === id);
   document.getElementById("mc-checkout-name").textContent = v.visitorName + " (" + v.companyName + ")";
-  document.getElementById("mc-time-out").textContent = nowTime() + " — " + nowDate();
+  document.getElementById("mc-date-out").value       = new Date().toISOString().split("T")[0];
+  document.getElementById("mc-time-out-input").value = new Date().toTimeString().slice(0, 5);
   document.getElementById("modal-checkout").classList.add("active");
 }
 
 async function xacNhanCheckout() {
-  await dbUpdate("visitors", currentId, { status: "out", timeOut: nowTime(), dateOut: nowDate() });
+  const dateVal = document.getElementById("mc-date-out").value;
+  const timeVal = document.getElementById("mc-time-out-input").value;
+  if (!dateVal || !timeVal) { alert("Please enter check-out date and time!"); return; }
+  await dbUpdate("visitors", currentId, { status: "out", timeOut: timeVal, dateOut: toDateVN(dateVal) });
   dongModal("modal-checkout");
   loadVisitors();
 }
@@ -167,11 +181,42 @@ async function xoaKhach(id) {
 }
 
 function resetFilter() {
-  document.getElementById("f-loc").value    = "";
-  document.getElementById("f-status").value = "";
-  document.getElementById("f-date").value   = new Date().toISOString().split("T")[0];
-  document.getElementById("f-search").value = "";
+  document.getElementById("f-loc").value       = "";
+  document.getElementById("f-status").value    = "";
+  document.getElementById("f-date-from").value = new Date().toISOString().split("T")[0];
+  document.getElementById("f-date-to").value   = new Date().toISOString().split("T")[0];
+  document.getElementById("f-search").value    = "";
   loadVisitors();
+}
+
+function showCurrentlyIn() {
+  const list = allData.filter(v => v.status === "in");
+  const container = document.getElementById("currently-in-list");
+  if (list.length === 0) {
+    container.innerHTML = `<p style="text-align:center;color:#6b7280;padding:20px">No visitors currently in office.</p>`;
+  } else {
+    container.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">
+        <th style="padding:8px 10px;text-align:left">#</th>
+        <th style="padding:8px 10px;text-align:left">Visitor Name</th>
+        <th style="padding:8px 10px;text-align:left">Company</th>
+        <th style="padding:8px 10px;text-align:left">Office</th>
+        <th style="padding:8px 10px;text-align:left">Date In</th>
+        <th style="padding:8px 10px;text-align:left">Time In</th>
+      </tr></thead>
+      <tbody>${list.map((v, i) => `
+        <tr style="border-bottom:1px solid #f3f4f6">
+          <td style="padding:8px 10px">${i + 1}</td>
+          <td style="padding:8px 10px"><strong>${v.visitorName}</strong></td>
+          <td style="padding:8px 10px">${v.companyName}</td>
+          <td style="padding:8px 10px">${locBadge(v.location)}</td>
+          <td style="padding:8px 10px">${v.dateIn}</td>
+          <td style="padding:8px 10px">${v.timeIn}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>`;
+  }
+  document.getElementById("modal-currently-in").classList.add("active");
 }
 
 async function xuatExcel() {
@@ -208,13 +253,20 @@ async function loadCardLoans() {
   document.getElementById("cb-returned").textContent = allCardLoans.filter(v => v.status === "returned" && v.returnDate === today).length;
   document.getElementById("cb-total").textContent    = allCardLoans.filter(v => v.borrowDate && v.borrowDate.slice(3) === thisMonth).length;
 
-  const fStatus = document.getElementById("cb-f-status").value;
-  const fDate   = document.getElementById("cb-f-date").value;
-  const fSearch = document.getElementById("cb-f-search").value.toLowerCase();
+  const fStatus   = document.getElementById("cb-f-status").value;
+  const fDateFrom = document.getElementById("cb-f-date-from").value;
+  const fDateTo   = document.getElementById("cb-f-date-to").value;
+  const fSearch   = document.getElementById("cb-f-search").value.toLowerCase();
 
   let ds = [...allCardLoans];
   if (fStatus) ds = ds.filter(v => v.status === fStatus);
-  if (fDate)   ds = ds.filter(v => v.borrowDate === toDateVN(fDate));
+  if (fDateFrom || fDateTo) ds = ds.filter(v => {
+    const iso = vnToISO(v.borrowDate);
+    if (!iso) return false;
+    if (fDateFrom && iso < fDateFrom) return false;
+    if (fDateTo   && iso > fDateTo)   return false;
+    return true;
+  });
   if (fSearch) ds = ds.filter(v => v.employeeName.toLowerCase().includes(fSearch));
 
   if (ds.length === 0) {
@@ -286,13 +338,17 @@ async function luuMuonThe() {
 function moModalTra(id) {
   currentId = id;
   const v = allCardLoans.find(x => x.id === id);
-  document.getElementById("mr-name").textContent = v.employeeName + " — " + v.cardType;
-  document.getElementById("mr-time").textContent = nowTime() + " — " + nowDate();
+  document.getElementById("mr-name").textContent   = v.employeeName + " — " + v.cardType;
+  document.getElementById("mr-date-input").value   = new Date().toISOString().split("T")[0];
+  document.getElementById("mr-time-input").value   = new Date().toTimeString().slice(0, 5);
   document.getElementById("modal-return").classList.add("active");
 }
 
 async function xacNhanTra() {
-  await dbUpdate("card_loans", currentId, { status: "returned", returnDate: nowDate(), returnTime: nowTime() });
+  const dateVal = document.getElementById("mr-date-input").value;
+  const timeVal = document.getElementById("mr-time-input").value;
+  if (!dateVal || !timeVal) { alert("Please enter return date and time!"); return; }
+  await dbUpdate("card_loans", currentId, { status: "returned", returnDate: toDateVN(dateVal), returnTime: timeVal });
   dongModal("modal-return");
   loadCardLoans();
 }
@@ -304,10 +360,41 @@ async function xoaMuon(id) {
 }
 
 function resetCardFilter() {
-  document.getElementById("cb-f-status").value = "";
-  document.getElementById("cb-f-date").value   = new Date().toISOString().split("T")[0];
-  document.getElementById("cb-f-search").value = "";
+  document.getElementById("cb-f-status").value    = "";
+  document.getElementById("cb-f-date-from").value = new Date().toISOString().split("T")[0];
+  document.getElementById("cb-f-date-to").value   = new Date().toISOString().split("T")[0];
+  document.getElementById("cb-f-search").value    = "";
   loadCardLoans();
+}
+
+function showCurrentlyBorrowed() {
+  const list = allCardLoans.filter(v => v.status === "borrowed");
+  const container = document.getElementById("currently-borrowed-list");
+  if (list.length === 0) {
+    container.innerHTML = `<p style="text-align:center;color:#6b7280;padding:20px">No cards currently borrowed.</p>`;
+  } else {
+    container.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:2px solid #e5e7eb;background:#f9fafb">
+        <th style="padding:8px 10px;text-align:left">#</th>
+        <th style="padding:8px 10px;text-align:left">Employee</th>
+        <th style="padding:8px 10px;text-align:left">Company</th>
+        <th style="padding:8px 10px;text-align:left">Card Type</th>
+        <th style="padding:8px 10px;text-align:left">Borrow Date</th>
+        <th style="padding:8px 10px;text-align:left">Borrow Time</th>
+      </tr></thead>
+      <tbody>${list.map((v, i) => `
+        <tr style="border-bottom:1px solid #f3f4f6">
+          <td style="padding:8px 10px">${i + 1}</td>
+          <td style="padding:8px 10px"><strong>${v.employeeName}</strong></td>
+          <td style="padding:8px 10px">${v.company || "—"}</td>
+          <td style="padding:8px 10px">${v.cardType}</td>
+          <td style="padding:8px 10px">${v.borrowDate}</td>
+          <td style="padding:8px 10px">${v.borrowTime}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>`;
+  }
+  document.getElementById("modal-currently-borrowed").classList.add("active");
 }
 
 // =====================
@@ -398,13 +485,15 @@ async function luuMuonTheDai() {
 function moModalTraDai(id) {
   currentId = id;
   const v = allLongLoans.find(x => x.id === id);
-  document.getElementById("mlr-name").textContent = v.employeeName + " — " + v.cardType;
-  document.getElementById("mlr-date").textContent = nowDate();
+  document.getElementById("mlr-name").textContent     = v.employeeName + " — " + v.cardType;
+  document.getElementById("mlr-date-input").value     = new Date().toISOString().split("T")[0];
   document.getElementById("modal-return-long").classList.add("active");
 }
 
 async function xacNhanTraDai() {
-  await dbUpdate("card_loans_long", currentId, { status: "returned", actualReturn: nowDate() });
+  const dateVal = document.getElementById("mlr-date-input").value;
+  if (!dateVal) { alert("Please enter a return date!"); return; }
+  await dbUpdate("card_loans_long", currentId, { status: "returned", actualReturn: toDateVN(dateVal) });
   dongModal("modal-return-long");
   loadLongTermLoans();
 }
