@@ -656,22 +656,17 @@ function openPOModal(id) {
   // Timeline
   const tlSection = document.getElementById("po-timeline-section");
   const tlDisplay = document.getElementById("po-timeline-display");
-  if (isEdit) {
-    const history = (allPOs.find(x => x.id === id) || {}).statusHistory || {};
-    tlDisplay.innerHTML = PO_STATUS_STEPS.map(step => {
-      const date = history[step];
-      return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;border-bottom:1px solid #f3f4f6">
-        <span style="width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;${date ? 'background:#16a34a;color:white' : 'background:#e5e7eb;color:#9ca3af'}">
-          ${date ? "✓" : "○"}
-        </span>
-        <span style="${date ? "color:#111827;font-weight:500" : "color:#9ca3af"};flex:1">${step}</span>
-        <span style="color:#6b7280;font-size:12px;white-space:nowrap">${date || "—"}</span>
-      </div>`;
-    }).join("");
-    tlSection.style.display = "block";
-  } else {
-    tlSection.style.display = "none";
-  }
+  const history   = isEdit ? ((allPOs.find(x => x.id === id) || {}).statusHistory || {}) : {};
+  tlDisplay.innerHTML = PO_STATUS_STEPS.map((step, idx) => {
+    const stored  = history[step] ? vnToISO(history[step]) : "";
+    const dateVal = stored || (idx === 0 && !isEdit ? new Date().toISOString().split("T")[0] : "");
+    return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13px;border-bottom:1px solid #f3f4f6">
+      <span style="flex:1;color:#374151;font-size:12px">${step}</span>
+      <input type="date" id="po-tl-${idx}" value="${dateVal}"
+        style="font-size:12px;padding:3px 8px;border:1px solid #d1d5db;border-radius:6px;color:#374151" />
+    </div>`;
+  }).join("");
+  tlSection.style.display = "block";
 
   document.getElementById("modal-po").classList.add("active");
 }
@@ -686,14 +681,11 @@ async function savePO() {
     alert("Please fill in Item, Status and Priority!"); return;
   }
 
-  const oldPO          = editingPOId ? allPOs.find(x => x.id === editingPOId) : null;
-  const existingHistory = oldPO ? (oldPO.statusHistory || {}) : {};
-  const newHistory      = { ...existingHistory };
-  if (!editingPOId) {
-    newHistory["Pending Review"] = nowDate();
-  } else if (oldPO && oldPO.status !== status && status !== "Cancelled") {
-    newHistory[status] = nowDate();
-  }
+  const newHistory = {};
+  PO_STATUS_STEPS.forEach((step, idx) => {
+    const val = document.getElementById(`po-tl-${idx}`)?.value;
+    if (val) newHistory[step] = isoToVN(val);
+  });
 
   const data = {
     poCode:        document.getElementById("po-code").value.trim(),
